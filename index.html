@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تابعي خطط العلاج المعلّقة أوتوماتيك</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@500;600;700&family=Tajawal:wght@400;500;700;800&family=IBM+Plex+Sans:wght@500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --ink: #12312C;
+      --bg: #FBF6EF;
+      --card: #FFFFFF;
+      --coral: #E2673F;
+      --coral-soft: #FBEAE2;
+      --green: #2E8F6B;
+      --green-soft: #E4F3EC;
+      --line: #E5DCC8;
+      --muted: #6B6459;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Tajawal', sans-serif;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .num {
+      font-family: 'IBM Plex Sans', sans-serif;
+      direction: ltr;
+      unicode-bidi: isolate;
+    }
+
+    h1,
+    h2,
+    h3,
+    .display {
+      font-family: 'El Messiri', serif;
+      font-weight: 700;
+    }
+
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* NAV */
+    nav {
+      padding: 22px 0;
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'El Messiri', serif;
+      font-weight: 700;
+      font-size: 20px;
+    }
+
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--coral);
+    }
+
+    /* HERO */
+    .hero {
+      padding: 56px 0 40px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 56px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--coral-soft);
+      color: var(--coral);
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 13.5px;
+      font-weight: 700;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      font-size: 44px;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      letter-spacing: -0.5px;
+    }
+
+    h1 .hl {
+      color: var(--coral);
+    }
+
+    .lede {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 520px;
+      margin-bottom: 32px;
+    }
+
+    /* SIGNATURE VISUAL: queue of pending -> accepted cards */
+    .queue {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 20px 50px -25px rgba(18, 49, 44, .25);
+    }
+
+    .queue-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 0 4px;
+    }
+
+    .queue-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .queue-live {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .queue-live .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: .35;
+      }
+    }
+
+    .qcard {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #FCFAF6;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 13px 14px;
+      margin-bottom: 10px;
+      transition: background .6s ease, border-color .6s ease;
+    }
+
+    .qcard:last-child {
+      margin-bottom: 0;
+    }
+
+    .qavatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--line);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--ink);
+    }
+
+    .qinfo {
+      flex: 1;
+    }
+
+    .qname {
+      font-weight: 700;
+      font-size: 14.5px;
+    }
+
+    .qtreat {
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+
+    .qstatus {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+      background: var(--coral-soft);
+      color: var(--coral);
+      transition: background .6s ease, color .6s ease;
+    }
+
+    .qcard.done .qstatus {
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .qcard.done {
+      border-color: #CFE9DC;
+    }
+
+    /* PROBLEM BAND */
+    .band {
+      background: var(--ink);
+      color: #F3EFE4;
+      padding: 52px 0;
+    }
+
+    .band-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 36px;
+      text-align: center;
+    }
+
+    .stat {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 42px;
+      font-weight: 600;
+      color: #F2A98A;
+      direction: ltr;
+    }
+
+    .stat-label {
+      font-size: 14.5px;
+      color: #CFC9BB;
+      margin-top: 6px;
+      max-width: 230px;
+      margin-inline: auto;
+    }
+
+    /* VALUE SECTION */
+    .section {
+      padding: 72px 0;
+    }
+
+    .section-head {
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto 44px;
+    }
+
+    .section-head h2 {
+      font-size: 30px;
+      margin-bottom: 12px;
+    }
+
+    .section-head p {
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .cards3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .vcard {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 26px;
+    }
+
+    .vnum {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--coral);
+      margin-bottom: 14px;
+      direction: ltr;
+    }
+
+    .vcard h3 {
+      font-size: 19px;
+      margin-bottom: 8px;
+    }
+
+    .vcard p {
+      color: var(--muted);
+      font-size: 14.5px;
+    }
+
+    /* FORM SECTION */
+    .form-section {
+      background: var(--card);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .form-inner {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 64px 24px;
+      text-align: center;
+    }
+
+    .form-inner h2 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .form-inner>p {
+      color: var(--muted);
+      margin-bottom: 32px;
+      font-size: 15.5px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: right;
+    }
+
+    label {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 2px;
+      display: block;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px 15px;
+      border-radius: 12px;
+      border: 1.5px solid var(--line);
+      background: #FCFAF6;
+      font-family: 'Tajawal', sans-serif;
+      font-size: 15px;
+      color: var(--ink);
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--coral);
+      background: #fff;
+    }
+
+    .submit-btn {
+      margin-top: 8px;
+      background: var(--coral);
+      color: #fff;
+      border: none;
+      padding: 15px 20px;
+      border-radius: 12px;
+      font-family: 'Tajawal', sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      cursor: pointer;
+      transition: filter .15s ease, transform .15s ease;
+    }
+
+    .submit-btn:hover {
+      filter: brightness(1.06);
+      transform: translateY(-1px);
+    }
+
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .fine {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-top: 14px;
+    }
+
+    .success {
+      display: none;
+      background: var(--green-soft);
+      border: 1.5px solid #BFE3D2;
+      padding: 22px;
+      border-radius: 14px;
+    }
+
+    #successHeadline {
+      color: var(--green);
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    .survey {
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid #BFE3D2;
+      text-align: right;
+    }
+
+    .survey-lede {
+      font-size: 14px;
+      color: var(--ink);
+      font-weight: 700;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .sq {
+      margin-bottom: 16px;
+    }
+
+    .sq-label {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      font-family: 'Tajawal', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1.5px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      transition: all .15s ease;
+    }
+
+    .chip:hover {
+      border-color: var(--coral);
+    }
+
+    .chip.selected {
+      background: var(--coral);
+      border-color: var(--coral);
+      color: #fff;
+    }
+
+    .survey-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .survey-actions .submit-btn {
+      flex: 1;
+      padding: 12px 16px;
+      font-size: 14.5px;
+    }
+
+    .skip-btn {
+      background: transparent;
+      border: 1.5px solid var(--line);
+      color: var(--muted);
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-family: 'Tajawal', sans-serif;
+      font-weight: 700;
+      font-size: 14.5px;
+      cursor: pointer;
+    }
+
+    .skip-btn:hover {
+      border-color: var(--muted);
+    }
+
+    .survey-thanks {
+      display: none;
+      text-align: center;
+      color: var(--green);
+      font-weight: 700;
+      font-size: 14.5px;
+      margin-top: 16px;
+    }
+
+    footer {
+      padding: 36px 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width:860px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 36px;
+      }
+
+      h1 {
+        font-size: 32px;
+      }
+
+      .band-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+
+      .cards3 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <div class="wrap nav-inner">
+      <div class="brand"><span class="brand-dot"></span> متابعة</div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">لأصحاب عيادات وأطباء الأسنان في مصر</span>
+        <h1>كل مريض قال <span class="hl">"هفكر فيها"</span>...<br>محتاج حد يفكّره</h1>
+        <p class="lede">نظام بسيط بيتابع تلقائيًا مع كل خطة علاج معلّقة، بدل ما تضيع وسط زحمة الاستقبال. بيبعت التذكير
+          في وقته، وبيوريك نسبة قبول العلاج في عيادتك بالظبط.</p>
+        <a href="#signup" class="submit-btn" style="display:inline-block; text-decoration:none;">سجّل اهتمامك الآن</a>
+      </div>
+
+      <div class="queue">
+        <div class="queue-head">
+          <span class="queue-title">خطط علاج قيد المتابعة</span>
+          <span class="queue-live"><span class="dot"></span> شغالة دلوقتي</span>
+        </div>
+        <div class="qcard" id="qc1">
+          <div class="qavatar">أ.ح</div>
+          <div class="qinfo">
+            <div class="qname">أحمد حسن</div>
+            <div class="qtreat">تركيبة زيركون — <span class="num">8,000</span> ج.م</div>
+          </div>
+          <div class="qstatus">قيد الانتظار</div>
+        </div>
+        <div class="qcard done" id="qc2">
+          <div class="qavatar">م.ع</div>
+          <div class="qinfo">
+            <div class="qname">منى علي</div>
+            <div class="qtreat">تقويم أسنان — <span class="num">25,000</span> ج.م</div>
+          </div>
+          <div class="qstatus">تم القبول ✓</div>
+        </div>
+        <div class="qcard" id="qc3">
+          <div class="qavatar">س.م</div>
+          <div class="qinfo">
+            <div class="qname">سارة محمد</div>
+            <div class="qtreat">حشو عصب — <span class="num">2,500</span> ج.م</div>
+          </div>
+          <div class="qstatus">قيد الانتظار</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="band">
+    <div class="wrap band-grid">
+      <div>
+        <div class="stat">30–50%</div>
+        <div class="stat-label">متوسط نسبة قبول خطط العلاج في العيادات فعليًا</div>
+      </div>
+      <div>
+        <div class="stat">70%+</div>
+        <div class="stat-label">من الحالات المتأخرة السبب فيها نسيان، مش رفض</div>
+      </div>
+      <div>
+        <div class="stat">0</div>
+        <div class="stat-label">دقيقة تحتاجها الاستقبال عشان تتابع يدويًا</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>مش نظام إدارة عيادة تاني</h2>
+        <p>أداة واحدة بتركز على حاجة واحدة: خلي كل خطة علاج معلّقة توصل لقرار.</p>
+      </div>
+      <div class="cards3">
+        <div class="vcard">
+          <div class="vnum">01</div>
+          <h3>تتبع تلقائي</h3>
+          <p>كل خطة علاج قال عليها المريض "هفكر" أو "هرجعلك" بتتسجل وتتابع لوحدها، من غير ما حد يفتكر يكتبها.</p>
+        </div>
+        <div class="vcard">
+          <div class="vnum">02</div>
+          <h3>تذكير في وقته</h3>
+          <p>رسالة واتساب بسيطة توصل للمريض في التوقيت المناسب، بدل ما يفضل الموضوع معلّق لحد ما ينسى.</p>
+        </div>
+        <div class="vcard">
+          <div class="vnum">03</div>
+          <h3>لوحة نسبة القبول</h3>
+          <p>تعرف بالظبط قد إيه من خطط العلاج بتتحول لعلاج فعلي، وقد إيه إيرادات معلّقة محتاجة متابعة.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="form-section" id="signup">
+    <div class="form-inner">
+      <h2>لسه بنبني المنتج</h2>
+      <p>وبنجمع اهتمام أطباء واستقبال عيادات الأسنان قبل ما نبدأ. سجّل بياناتك وهنكون من أول الناس اللي تتواصل معاها لما
+        يكون جاهز للتجربة.</p>
+
+      <form id="leadForm">
+        <div>
+          <label for="name">الاسم</label>
+          <input type="text" id="name" required placeholder="اسمك بالكامل">
+        </div>
+        <div>
+          <label for="phone">رقم الواتساب</label>
+          <input type="tel" id="phone" required placeholder="01xxxxxxxxx">
+        </div>
+        <div>
+          <label for="clinic">اسم العيادة (اختياري)</label>
+          <input type="text" id="clinic" placeholder="اسم العيادة">
+        </div>
+        <div>
+          <label for="role">دورك في العيادة (اختياري)</label>
+          <input type="text" id="role" placeholder="طبيب / استقبال / صاحب عيادة">
+        </div>
+        <button type="submit" class="submit-btn">سجّل اهتمامك</button>
+        <p class="fine">مفيش أي التزام أو دفع دلوقتي — بس عشان نعرف نتواصل معاك.</p>
+      </form>
+
+      <div class="success" id="successMsg">
+        <div id="successHeadline">تم التسجيل بنجاح ✓ هنتواصل معاك على الواتساب قريب.</div>
+
+        <div id="surveyPanel" class="survey">
+          <p class="survey-lede">لو عندك دقيقة، 3 أسئلة سريعة هتساعدنا نبني حاجة مفيدة فعلاً (اختياري تماماً):</p>
+
+          <div class="sq">
+            <div class="sq-label">إزاي بتتابعوا خطط العلاج المعلّقة دلوقتي؟</div>
+            <div class="chips" data-q="tracking">
+              <button type="button" class="chip">ورقة / دفتر</button>
+              <button type="button" class="chip">Excel</button>
+              <button type="button" class="chip">متابعة يدوية على واتساب</button>
+              <button type="button" class="chip">نظام إدارة عيادة موجود</button>
+              <button type="button" class="chip">مفيش متابعة أصلاً</button>
+            </div>
+          </div>
+
+          <div class="sq">
+            <div class="sq-label">بتستخدموا نظام إدارة عيادة حالياً؟</div>
+            <div class="chips" data-q="hasSystem">
+              <button type="button" class="chip">آه، وراضيين عنه</button>
+              <button type="button" class="chip">آه، بس فيه مشاكل</button>
+              <button type="button" class="chip">لأ</button>
+              <button type="button" class="chip">بنفكر نجيب واحد قريب</button>
+            </div>
+          </div>
+
+          <div class="sq">
+            <div class="sq-label">مين بياخد قرار شراء أدوات جديدة في العيادة؟</div>
+            <div class="chips" data-q="decisionMaker">
+              <button type="button" class="chip">أنا</button>
+              <button type="button" class="chip">صاحب/ة العيادة</button>
+              <button type="button" class="chip">بالاتفاق مع الفريق</button>
+            </div>
+          </div>
+
+          <div class="survey-actions">
+            <button type="button" class="submit-btn" id="sendSurvey">إرسال الإجابات</button>
+            <button type="button" class="skip-btn" id="skipSurvey">تخطي</button>
+          </div>
+        </div>
+
+        <div class="survey-thanks" id="surveyThanks">شكرًا! ده هيفرق فعلاً في اللي هنبنيه. 🙏</div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="wrap">© 2026 — تجربة أولية لفهم احتياج عيادات الأسنان في مصر</footer>
+
+  <script>
+const form = document.getElementById('leadForm');
+    const successMsg = document.getElementById('successMsg');
+} catch (err) { /* silent — storage only exists inside Claude artifact preview */ }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const btn = form.querySelector('.submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'جاري إرسال التسجيل...';
+
+      const entry = {
+        name: document.getElementById('name').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        clinic: document.getElementById('clinic').value.trim(),
+        role: document.getElementById('role').value.trim(),
+        ts: new Date().toISOString()
+      };
+
+      try {
+        const response = await fetch('/api/lead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(entry)
+        });
+
+        if (!response.ok) {
+          throw new Error('Lead submission failed');
+        }
+
+        form.style.display = 'none';
+        successMsg.style.display = 'block';
+        lastEntry = entry;
+      } catch (err) {
+        console.error(err);
+        btn.disabled = false;
+        btn.textContent = 'سجّل اهتمامك';
+        alert('حصلت مشكلة أثناء التسجيل. من فضلك حاول مرة أخرى.');
+      }
+    });
+
+    // ---- Optional post-registration survey (does not gate the main signup) ----
+    let lastEntry = null;
+    const surveyAnswers = {};
+
+    document.querySelectorAll('.chips').forEach(group => {
+      const qKey = group.dataset.q;
+      group.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          group.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+          chip.classList.add('selected');
+          surveyAnswers[qKey] = chip.textContent.trim();
+        });
+      });
+    });
+
+    document.getElementById('skipSurvey').addEventListener('click', () => {
+      document.getElementById('surveyPanel').style.display = 'none';
+    });
+
+    document.getElementById('sendSurvey').addEventListener('click', async () => {
+      if (Object.keys(surveyAnswers).length === 0) {
+        document.getElementById('surveyPanel').style.display = 'none';
+        return;
+      }
+const surveyMessage =
+        'إجابات سريعة (تكملة للتسجيل السابق):\n' +
+        (surveyAnswers.tracking ? 'المتابعة حاليًا: ' + surveyAnswers.tracking + '\n' : '') +
+        (surveyAnswers.hasSystem ? 'نظام إدارة عيادة: ' + surveyAnswers.hasSystem + '\n' : '') +
+        (surveyAnswers.decisionMaker ? 'قرار الشراء: ' + surveyAnswers.decisionMaker : '');
+
+      window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(surveyMessage), '_blank');
+
+      document.getElementById('surveyPanel').style.display = 'none';
+      document.getElementById('surveyThanks').style.display = 'block';
+    });
+
+  </script>
+
+</body>
+
+</html>
