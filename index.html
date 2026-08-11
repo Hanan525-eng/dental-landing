@@ -718,10 +718,6 @@
   <footer class="wrap">© 2026 — تجربة أولية لفهم احتياج عيادات الأسنان في مصر</footer>
 
   <script>
-    // ⚠️ غيّري الرقم ده برقم واتساب بيزنس بتاعك (بصيغة دولية بدون + أو أصفار زيادة)
-    // مثال: لو رقمك 01012345678 يبقى الرقم هنا 201012345678
-    const WHATSAPP_NUMBER = '201000000000';
-
     const form = document.getElementById('leadForm');
     const successMsg = document.getElementById('successMsg');
 
@@ -782,20 +778,32 @@
     });
 
     document.getElementById('sendSurvey').addEventListener('click', async () => {
+      const panel = document.getElementById('surveyPanel');
+      const thanks = document.getElementById('surveyThanks');
+
       if (Object.keys(surveyAnswers).length === 0) {
-        document.getElementById('surveyPanel').style.display = 'none';
+        panel.style.display = 'none';
         return;
       }
-      const surveyMessage =
-        'إجابات سريعة (تكملة للتسجيل السابق):\n' +
-        (surveyAnswers.tracking ? 'المتابعة حاليًا: ' + surveyAnswers.tracking + '\n' : '') +
-        (surveyAnswers.hasSystem ? 'نظام إدارة عيادة: ' + surveyAnswers.hasSystem + '\n' : '') +
-        (surveyAnswers.decisionMaker ? 'قرار الشراء: ' + surveyAnswers.decisionMaker : '');
 
-      window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(surveyMessage), '_blank');
+      try {
+        // إجابات الاستبيان بتتبعت لنفس الـ API الآمن (backend)، مش لرقم واتساب مكشوف في الكود
+        await fetch('/api/lead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...lastEntry,
+            survey: surveyAnswers,
+            type: 'survey'
+          })
+        });
+      } catch (err) {
+        console.error(err);
+        // حتى لو فشل الإرسال، منسيبش المستخدم واقف - الرسالة الأساسية اتسجلت خلاص
+      }
 
-      document.getElementById('surveyPanel').style.display = 'none';
-      document.getElementById('surveyThanks').style.display = 'block';
+      panel.style.display = 'none';
+      thanks.style.display = 'block';
     });
 
   </script>
