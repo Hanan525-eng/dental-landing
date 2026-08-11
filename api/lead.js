@@ -31,10 +31,33 @@
       role: String(role).trim(),
       survey,
       type,
-      ts: ts || new Date().toISOString(),
+      created_at: ts || new Date().toISOString(),
     };
 
-    console.log("New dental lead:", lead);
+    const response = await fetch(
+      `${process.env.SUPABASE_URL}/rest/v1/leads`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: process.env.SUPABASE_SECRET_KEY,
+          Authorization: `Bearer ${process.env.SUPABASE_SECRET_KEY}`,
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify(lead),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+
+      console.error("Supabase error:", errorText);
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to save lead",
+      });
+    }
 
     return res.status(200).json({
       success: true,
