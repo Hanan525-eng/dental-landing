@@ -26,37 +26,67 @@
 
     const cleanedPhone = String(phone).trim();
 
-    // نتأكد من عدم التكرار بس لتسجيلات النوع "lead" الأساسية
-    // (مش لإجابات الاستبيان "survey" اللي بتتبعت لنفس الرقم عمداً)
-    if (type === "lead") {
-      const checkResponse = await fetch(
+    // ---- حالة الاستبيان: بنحدّث صف التسجيل الأصلي بدل ما ننشئ صف جديد ----
+    if (type === "survey") {
+      const updateResponse = await fetch(
         `${process.env.SUPABASE_URL}/rest/v1/leads?phone=eq.${encodeURIComponent(
           cleanedPhone,
-        )}&type=eq.lead&select=id`,
+        )}&type=eq.lead`,
         {
-          method: "GET",
+          method: "PATCH",
           headers: {
+            "Content-Type": "application/json",
             apikey: process.env.SUPABASE_SECRET_KEY,
             Authorization: `Bearer ${process.env.SUPABASE_SECRET_KEY}`,
+            Prefer: "return=minimal",
           },
+          body: JSON.stringify({ survey }),
         },
       );
 
-      if (checkResponse.ok) {
-        const existing = await checkResponse.json();
-        if (Array.isArray(existing) && existing.length > 0) {
-          return res.status(409).json({
-            success: false,
-            message: "This phone number is already registered",
-          });
-        }
-      } else {
-        console.error(
-          "Supabase duplicate-check error:",
-          await checkResponse.text(),
-        );
-        // منوقفش التسجيل بسبب فشل التحقق نفسه - نكمل ونحاول الإدراج العادي
+      if (!updateResponse.ok) {
+        const errorText = await updateResponse.text();
+        console.error("Supabase survey-update error:", errorText);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to save survey",
+        });
       }
+
+      return res.status(200).json({
+        success: true,
+        message: "Survey saved successfully",
+      });
+    }
+
+    // ---- حالة التسجيل الأساسي: نتأكد من عدم التكرار قبل الإدراج ----
+    const checkResponse = await fetch(
+      `${process.env.SUPABASE_URL}/rest/v1/leads?phone=eq.${encodeURIComponent(
+        cleanedPhone,
+      )}&type=eq.lead&select=id`,
+      {
+        method: "GET",
+        headers: {
+          apikey: process.env.SUPABASE_SECRET_KEY,
+          Authorization: `Bearer ${process.env.SUPABASE_SECRET_KEY}`,
+        },
+      },
+    );
+
+    if (checkResponse.ok) {
+      const existing = await checkResponse.json();
+      if (Array.isArray(existing) && existing.length > 0) {
+        return res.status(409).json({
+          success: false,
+          message: "This phone number is already registered",
+        });
+      }
+    } else {
+      console.error(
+        "Supabase duplicate-check error:",
+        await checkResponse.text(),
+      );
+      // منوقفش التسجيل بسبب فشل التحقق نفسه - نكمل ونحاول الإدراج العادي
     }
 
     const lead = {
