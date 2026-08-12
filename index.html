@@ -382,6 +382,23 @@
       background: #fff;
     }
 
+    input.invalid {
+      border-color: #D9534F;
+      background: #FDF3F2;
+    }
+
+    .field-error {
+      display: none;
+      color: #D9534F;
+      font-size: 12.5px;
+      font-weight: 600;
+      margin-top: -6px;
+    }
+
+    .field-error.show {
+      display: block;
+    }
+
     .submit-btn {
       margin-top: 8px;
       background: var(--coral);
@@ -518,6 +535,45 @@
       margin-top: 16px;
     }
 
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: #fff;
+      padding: 15px 22px;
+      border-radius: 14px;
+      font-family: 'Tajawal', sans-serif;
+      font-size: 14.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 15px 40px -10px rgba(0, 0, 0, .35);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease, transform .25s ease;
+      z-index: 999;
+      max-width: 90vw;
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.error {
+      background: #B3413C;
+    }
+
+    .toast-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
     footer {
       padding: 36px 0;
       text-align: center;
@@ -647,14 +703,17 @@
       <p>وبنجمع اهتمام أطباء واستقبال عيادات الأسنان قبل ما نبدأ. سجّل بياناتك وهنكون من أول الناس اللي تتواصل معاها لما
         يكون جاهز للتجربة.</p>
 
-      <form id="leadForm">
+      <form id="leadForm" novalidate>
         <div>
           <label for="name">الاسم</label>
           <input type="text" id="name" required placeholder="اسمك بالكامل">
+          <div class="field-error" id="nameError">من فضلك اكتبي اسم مكوّن من حرفين على الأقل</div>
         </div>
         <div>
           <label for="phone">رقم الواتساب</label>
           <input type="tel" id="phone" required placeholder="01xxxxxxxxx">
+          <div class="field-error" id="phoneError">رقم الموبايل مش صحيح — لازم يبدأ بـ 010 أو 011 أو 012 أو 015 ويكون 11
+            رقم</div>
         </div>
         <div>
           <label for="clinic">اسم العيادة (اختياري)</label>
@@ -717,20 +776,101 @@
 
   <footer class="wrap">© 2026 — تجربة أولية لفهم احتياج عيادات الأسنان في مصر</footer>
 
+  <div class="toast" id="toast"><span class="toast-icon" id="toastIcon">✓</span><span id="toastMsg"></span></div>
+
   <script>
     const form = document.getElementById('leadForm');
     const successMsg = document.getElementById('successMsg');
+    const nameInput = document.getElementById('name');
+    const phoneInput = document.getElementById('phone');
+    const nameError = document.getElementById('nameError');
+    const phoneError = document.getElementById('phoneError');
+
+    // ---- Toast ----
+    let toastTimer = null;
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toastIcon');
+      document.getElementById('toastMsg').textContent = message;
+      icon.textContent = type === 'success' ? '✓' : '!';
+      toast.classList.toggle('error', type !== 'success');
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    // ---- Validation ----
+    function isValidEgyptPhone(raw) {
+      const cleaned = raw.replace(/[\s-]/g, '');
+      return /^(\+20|0020|20)?01[0125][0-9]{8}$/.test(cleaned);
+    }
+
+    function validateForm() {
+      let valid = true;
+
+      const name = nameInput.value.trim();
+      if (name.length < 2) {
+        nameInput.classList.add('invalid');
+        nameError.classList.add('show');
+        valid = false;
+      } else {
+        nameInput.classList.remove('invalid');
+        nameError.classList.remove('show');
+      }
+
+      const phone = phoneInput.value.trim();
+      if (!isValidEgyptPhone(phone)) {
+        phoneInput.classList.add('invalid');
+        phoneError.classList.add('show');
+        valid = false;
+      } else {
+        phoneInput.classList.remove('invalid');
+        phoneError.classList.remove('show');
+      }
+
+      return valid;
+    }
+
+    // إخفاء رسالة الخطأ أول ما المستخدم يبدأ يعدّل
+    nameInput.addEventListener('input', () => {
+      if (nameInput.value.trim().length >= 2) {
+        nameInput.classList.remove('invalid');
+        nameError.classList.remove('show');
+      }
+    });
+    phoneInput.addEventListener('input', () => {
+      if (isValidEgyptPhone(phoneInput.value.trim())) {
+        phoneInput.classList.remove('invalid');
+        phoneError.classList.remove('show');
+      }
+    });
+
+    function resetToForm() {
+      form.reset();
+      document.getElementById('surveyPanel').style.display = 'flex';
+      document.getElementById('surveyPanel').style.flexDirection = 'column';
+      document.getElementById('surveyThanks').style.display = 'none';
+      document.querySelectorAll('.chip.selected').forEach(c => c.classList.remove('selected'));
+      Object.keys(surveyAnswers).forEach(k => delete surveyAnswers[k]);
+      successMsg.style.display = 'none';
+      form.style.display = 'flex';
+    }
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      if (!validateForm()) {
+        showToast('في بيانات ناقصة أو غلط، شوفي الملاحظات تحت الحقول', 'error');
+        return;
+      }
 
       const btn = form.querySelector('.submit-btn');
       btn.disabled = true;
       btn.textContent = 'جاري إرسال التسجيل...';
 
       const entry = {
-        name: document.getElementById('name').value.trim(),
-        phone: document.getElementById('phone').value.trim(),
+        name: nameInput.value.trim(),
+        phone: phoneInput.value.trim(),
         clinic: document.getElementById('clinic').value.trim(),
         role: document.getElementById('role').value.trim(),
         ts: new Date().toISOString()
@@ -743,18 +883,27 @@
           body: JSON.stringify(entry)
         });
 
+        if (response.status === 409) {
+          showToast('الرقم ده مسجّل عندنا بالفعل ✓', 'error');
+          btn.disabled = false;
+          btn.textContent = 'سجّل اهتمامك';
+          return;
+        }
+
         if (!response.ok) {
           throw new Error('Lead submission failed');
         }
 
+        showToast('تم التسجيل بنجاح ✓ هنتواصل معاك قريب');
         form.style.display = 'none';
         successMsg.style.display = 'block';
         lastEntry = entry;
       } catch (err) {
         console.error(err);
+        showToast('حصلت مشكلة أثناء التسجيل، حاولي تاني', 'error');
+      } finally {
         btn.disabled = false;
         btn.textContent = 'سجّل اهتمامك';
-        alert('حصلت مشكلة أثناء التسجيل. من فضلك حاول مرة أخرى.');
       }
     });
 
@@ -775,6 +924,7 @@
 
     document.getElementById('skipSurvey').addEventListener('click', () => {
       document.getElementById('surveyPanel').style.display = 'none';
+      setTimeout(resetToForm, 900);
     });
 
     document.getElementById('sendSurvey').addEventListener('click', async () => {
@@ -783,6 +933,7 @@
 
       if (Object.keys(surveyAnswers).length === 0) {
         panel.style.display = 'none';
+        setTimeout(resetToForm, 900);
         return;
       }
 
@@ -804,6 +955,7 @@
 
       panel.style.display = 'none';
       thanks.style.display = 'block';
+      setTimeout(resetToForm, 1800);
     });
 
   </script>

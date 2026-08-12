@@ -24,9 +24,44 @@
       });
     }
 
+    const cleanedPhone = String(phone).trim();
+
+    // نتأكد من عدم التكرار بس لتسجيلات النوع "lead" الأساسية
+    // (مش لإجابات الاستبيان "survey" اللي بتتبعت لنفس الرقم عمداً)
+    if (type === "lead") {
+      const checkResponse = await fetch(
+        `${process.env.SUPABASE_URL}/rest/v1/leads?phone=eq.${encodeURIComponent(
+          cleanedPhone,
+        )}&type=eq.lead&select=id`,
+        {
+          method: "GET",
+          headers: {
+            apikey: process.env.SUPABASE_SECRET_KEY,
+            Authorization: `Bearer ${process.env.SUPABASE_SECRET_KEY}`,
+          },
+        },
+      );
+
+      if (checkResponse.ok) {
+        const existing = await checkResponse.json();
+        if (Array.isArray(existing) && existing.length > 0) {
+          return res.status(409).json({
+            success: false,
+            message: "This phone number is already registered",
+          });
+        }
+      } else {
+        console.error(
+          "Supabase duplicate-check error:",
+          await checkResponse.text(),
+        );
+        // منوقفش التسجيل بسبب فشل التحقق نفسه - نكمل ونحاول الإدراج العادي
+      }
+    }
+
     const lead = {
       name: String(name).trim(),
-      phone: String(phone).trim(),
+      phone: cleanedPhone,
       clinic: String(clinic).trim(),
       role: String(role).trim(),
       survey,
@@ -34,19 +69,16 @@
       created_at: ts || new Date().toISOString(),
     };
 
-    const response = await fetch(
-      `${process.env.SUPABASE_URL}/rest/v1/leads`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: process.env.SUPABASE_SECRET_KEY,
-          Authorization: `Bearer ${process.env.SUPABASE_SECRET_KEY}`,
-          Prefer: "return=minimal",
-        },
-        body: JSON.stringify(lead),
-      }
-    );
+    const response = await fetch(`${process.env.SUPABASE_URL}/rest/v1/leads`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: process.env.SUPABASE_SECRET_KEY,
+        Authorization: `Bearer ${process.env.SUPABASE_SECRET_KEY}`,
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify(lead),
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
