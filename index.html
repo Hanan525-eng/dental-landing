@@ -392,7 +392,7 @@
       color: #D9534F;
       font-size: 12.5px;
       font-weight: 600;
-      margin-top: -6px;
+      margin-top: 6px;
     }
 
     .field-error.show {
@@ -707,13 +707,12 @@
         <div>
           <label for="name">الاسم</label>
           <input type="text" id="name" required placeholder="اسمك بالكامل">
-          <div class="field-error" id="nameError">من فضلك اكتبي اسم مكوّن من حرفين على الأقل</div>
+          <div class="field-error" id="nameError"></div>
         </div>
         <div>
           <label for="phone">رقم الواتساب</label>
           <input type="tel" id="phone" required placeholder="01xxxxxxxxx">
-          <div class="field-error" id="phoneError">رقم الموبايل مش صحيح — لازم يبدأ بـ 010 أو 011 أو 012 أو 015 ويكون 11
-            رقم</div>
+          <div class="field-error" id="phoneError"></div>
         </div>
         <div>
           <label for="clinic">اسم العيادة (اختياري)</label>
@@ -805,43 +804,52 @@
       return /^(\+20|0020|20)?01[0125][0-9]{8}$/.test(cleaned);
     }
 
-    function validateForm() {
-      let valid = true;
-
-      const name = nameInput.value.trim();
-      if (name.length < 2) {
-        nameInput.classList.add('invalid');
-        nameError.classList.add('show');
-        valid = false;
-      } else {
-        nameInput.classList.remove('invalid');
-        nameError.classList.remove('show');
-      }
-
-      const phone = phoneInput.value.trim();
-      if (!isValidEgyptPhone(phone)) {
-        phoneInput.classList.add('invalid');
-        phoneError.classList.add('show');
-        valid = false;
-      } else {
-        phoneInput.classList.remove('invalid');
-        phoneError.classList.remove('show');
-      }
-
-      return valid;
+    // بترجع رسالة الخطأ المناسبة، أو null لو الاسم سليم
+    function getNameErrorMessage(value) {
+      const name = value.trim();
+      if (name.length === 0) return 'الاسم مطلوب — من فضلك اكتبي اسمك';
+      if (name.length < 2) return 'الاسم قصير أوي — اكتبي اسم مكوّن من حرفين على الأقل';
+      return null;
     }
 
-    // إخفاء رسالة الخطأ أول ما المستخدم يبدأ يعدّل
+    // بترجع رسالة الخطأ المناسبة، أو null لو الرقم سليم
+    function getPhoneErrorMessage(value) {
+      const phone = value.trim();
+      if (phone.length === 0) return 'رقم الواتساب مطلوب — من فضلك اكتبيه';
+      if (!isValidEgyptPhone(phone)) return 'رقم الموبايل مش صحيح — لازم يبدأ بـ 010 أو 011 أو 012 أو 015 ويكون 11 رقم';
+      return null;
+    }
+
+    function applyFieldError(input, errorEl, message) {
+      if (message) {
+        input.classList.add('invalid');
+        errorEl.textContent = message;
+        errorEl.classList.add('show');
+      } else {
+        input.classList.remove('invalid');
+        errorEl.classList.remove('show');
+      }
+    }
+
+    function validateForm() {
+      const nameMsg = getNameErrorMessage(nameInput.value);
+      const phoneMsg = getPhoneErrorMessage(phoneInput.value);
+
+      applyFieldError(nameInput, nameError, nameMsg);
+      applyFieldError(phoneInput, phoneError, phoneMsg);
+
+      return !nameMsg && !phoneMsg;
+    }
+
+    // إخفاء رسالة الخطأ أول ما الحقل يبقى سليم - من غير ما نظهر رسائل جديدة وهو لسه بيكتب
     nameInput.addEventListener('input', () => {
-      if (nameInput.value.trim().length >= 2) {
-        nameInput.classList.remove('invalid');
-        nameError.classList.remove('show');
+      if (!getNameErrorMessage(nameInput.value)) {
+        applyFieldError(nameInput, nameError, null);
       }
     });
     phoneInput.addEventListener('input', () => {
-      if (isValidEgyptPhone(phoneInput.value.trim())) {
-        phoneInput.classList.remove('invalid');
-        phoneError.classList.remove('show');
+      if (!getPhoneErrorMessage(phoneInput.value)) {
+        applyFieldError(phoneInput, phoneError, null);
       }
     });
 
